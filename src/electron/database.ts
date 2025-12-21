@@ -41,6 +41,42 @@ export function initDatabase() {
     )
   `);
 
+  // Create recipes table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS recipes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      servings INTEGER NOT NULL,
+      time_needed INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
+  // Create recipe_ingredients table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS recipe_ingredients (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipe_id INTEGER NOT NULL,
+      ingredient_id INTEGER NOT NULL,
+      quantity TEXT NOT NULL,
+      FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
+      FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
+    )
+  `);
+
+  // Create recipe_instructions table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS recipe_instructions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipe_id INTEGER NOT NULL,
+      step_number INTEGER NOT NULL,
+      instruction TEXT NOT NULL,
+      FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+    )
+  `);
+
   console.log("Database initialized at:", dbPath);
 }
 
@@ -560,3 +596,297 @@ export function deleteIngredient(
     };
   }
 }
+
+// Recipe interfaces and functions
+export interface Recipe {
+  id: number;
+  name: string;
+  servings: number;
+  time_needed: number;
+  user_id: number;
+  created_at: string;
+}
+
+export interface RecipeIngredient {
+  id: number;
+  recipe_id: number;
+  ingredient_id: number;
+  quantity: string;
+  ingredient_name?: string;
+  ingredient_unit?: string;
+}
+
+export interface RecipeInstruction {
+  id: number;
+  recipe_id: number;
+  step_number: number;
+  instruction: string;
+}
+
+export interface RecipeWithDetails extends Recipe {
+  ingredients: RecipeIngredient[];
+  instructions: RecipeInstruction[];
+}
+
+export interface RecipeInput {
+  name: string;
+  servings: number;
+  timeNeeded: number;
+  ingredients: Array<{ ingredientId: number; quantity: string }>;
+  instructions: string[];
+}
+
+// Add a new recipe
+export function addRecipe(
+  input: RecipeInput,
+  userId: number
+): { success: boolean; message: string; recipe?: RecipeWithDetails } {
+  try {
+    // Validate input
+    if (!input.name || input.name.trim().length === 0) {
+      return { success: false, message: "Recipe name is required" };
+    }
+    if (input.servings <= 0) {
+      return { success: false, message: "Servings must be greater than 0" };
+    }
+    if (input.timeNeeded <= 0) {
+      return { success: false, message: "Time needed must be greater than 0" };
+    }
+    if (!input.ingredients || input.ingredients.length === 0) {
+      return { success: false, message: "At least one ingredient is required" };
+    }
+    if (!input.instructions || input.instructions.length === 0) {
+      return { success: false, message: "At least one instruction is required" };
+    }
+
+    // Start transaction
+    const insertRecipe = db.prepare(
+      "INSERT INTO recipes (name, servings, time_needed, user_id) VALUES (?, ?, ?, ?)"
+    );
+    const insertIngredient = db.prepare(
+      "INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (?, ?, ?)"
+    );
+    const insertInstruction = db.prepare(
+      "INSERT INTO recipe_instructions (recipe_id, step_number, instruction) VALUES (?, ?, ?)"
+    );
+
+    // Insert recipe
+    const result = insertRecipe.run(
+      input.name.trim(),
+      input.servings,
+      input.timeNeeded,
+      userId
+    );
+    const recipeId = result.lastInsertRowid as number;
+
+    // Insert ingredients
+    input.ingredients.forEach((ing) => {
+      insertIngredient.run(recipeId, ing.ingredientId, ing.quantity);
+    });
+
+    // Insert instructions
+    input.instructions.forEach((instruction, index) => {
+      insertInstruction.run(recipeId, index + 1, instruction);
+    });
+
+    // Get the complete recipe
+    const recipe = getRecipeById(recipeId, userId);
+    if (recipe.success && recipe.recipe) {
+      return {
+        success: true,
+        message: "Recipe added successfully",
+        recipe: recipe.recipe,
+      };
+    }
+
+    return { success: false, message: "Failed to retrieve created recipe" };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to add recipe: " + error.message,
+    };
+  }
+}
+
+// Get all recipes for a user
+export function getRecipes(userId: number): {
+  success: boolean;
+  recipes?: Recipe[];
+  message?: string;
+} {
+  try {
+    const stmt = db.prepare(
+      "SELECT * FROM recipes WHERE user_id = ? ORDER BY created_at DESC"
+    );
+    const recipes = stmt.all(userId) as Recipe[];
+
+    return {
+      success: true,
+      recipes,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to get recipes: " + error.message,
+    };
+  }
+}
+
+// Get a specific recipe with all details
+export function getRecipeById(
+  id: number,
+  userId: number
+): {
+  success: boolean;
+  recipe?: RecipeWithDetails;
+  message?: string;
+} {
+  try {
+    // Get recipe
+    const recipeStmt = db.prepare(
+      "SELECT * FROM recipes WHERE id = ? AND user_id = ?"
+    );
+    const recipe = recipeStmt.get(id, userId) as Recipe;
+
+    if (!recipe) {
+      return {
+        success: false,
+        message: "Recipe not found or not authorized",
+      };
+    }
+
+    // Get ingredients
+    const ingredientsStmt = db.prepare(`
+      SELECT ri.*, i.name as ingredient_name, i.unit as ingredient_unit
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON ri.ingredient_id = i.id
+      WHERE ri.recipe_id = ?
+    `);
+    const ingredients = ingredientsStmt.all(id) as RecipeIngredient[];
+
+    // Get instructions
+    const instructionsStmt = db.prepare(
+      "SELECT * FROM recipe_instructions WHERE recipe_id = ? ORDER BY step_number"
+    );
+    const instructions = instructionsStmt.all(id) as RecipeInstruction[];
+
+    return {
+      success: true,
+      recipe: {
+        ...recipe,
+        ingredients,
+        instructions,
+      },
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to get recipe: " + error.message,
+    };
+  }
+}
+
+// Update a recipe
+export function updateRecipe(
+  id: number,
+  input: RecipeInput,
+  userId: number
+): { success: boolean; message: string; recipe?: RecipeWithDetails } {
+  try {
+    // Validate input
+    if (!input.name || input.name.trim().length === 0) {
+      return { success: false, message: "Recipe name is required" };
+    }
+    if (input.servings <= 0) {
+      return { success: false, message: "Servings must be greater than 0" };
+    }
+    if (input.timeNeeded <= 0) {
+      return { success: false, message: "Time needed must be greater than 0" };
+    }
+
+    // Update recipe
+    const updateStmt = db.prepare(
+      "UPDATE recipes SET name = ?, servings = ?, time_needed = ? WHERE id = ? AND user_id = ?"
+    );
+    const result = updateStmt.run(
+      input.name.trim(),
+      input.servings,
+      input.timeNeeded,
+      id,
+      userId
+    );
+
+    if (result.changes === 0) {
+      return {
+        success: false,
+        message: "Recipe not found or not authorized",
+      };
+    }
+
+    // Delete existing ingredients and instructions
+    db.prepare("DELETE FROM recipe_ingredients WHERE recipe_id = ?").run(id);
+    db.prepare("DELETE FROM recipe_instructions WHERE recipe_id = ?").run(id);
+
+    // Insert new ingredients
+    const insertIngredient = db.prepare(
+      "INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (?, ?, ?)"
+    );
+    input.ingredients.forEach((ing) => {
+      insertIngredient.run(id, ing.ingredientId, ing.quantity);
+    });
+
+    // Insert new instructions
+    const insertInstruction = db.prepare(
+      "INSERT INTO recipe_instructions (recipe_id, step_number, instruction) VALUES (?, ?, ?)"
+    );
+    input.instructions.forEach((instruction, index) => {
+      insertInstruction.run(id, index + 1, instruction);
+    });
+
+    // Get the updated recipe
+    const recipe = getRecipeById(id, userId);
+    if (recipe.success && recipe.recipe) {
+      return {
+        success: true,
+        message: "Recipe updated successfully",
+        recipe: recipe.recipe,
+      };
+    }
+
+    return { success: false, message: "Failed to retrieve updated recipe" };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to update recipe: " + error.message,
+    };
+  }
+}
+
+// Delete a recipe
+export function deleteRecipe(
+  id: number,
+  userId: number
+): { success: boolean; message: string } {
+  try {
+    const stmt = db.prepare("DELETE FROM recipes WHERE id = ? AND user_id = ?");
+    const result = stmt.run(id, userId);
+
+    if (result.changes === 0) {
+      return {
+        success: false,
+        message: "Recipe not found or not authorized",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Recipe deleted successfully",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to delete recipe: " + error.message,
+    };
+  }
+}
+

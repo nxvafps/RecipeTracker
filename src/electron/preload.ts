@@ -19,6 +19,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.invoke("ingredients:update", id, name, unit),
     delete: (id: number) => ipcRenderer.invoke("ingredients:delete", id),
   },
+  // Recipes methods
+  recipes: {
+    add: (input: any) => ipcRenderer.invoke("recipes:add", input),
+    getAll: () => ipcRenderer.invoke("recipes:getAll"),
+    getById: (id: number) => ipcRenderer.invoke("recipes:getById", id),
+    update: (id: number, input: any) =>
+      ipcRenderer.invoke("recipes:update", id, input),
+    delete: (id: number) => ipcRenderer.invoke("recipes:delete", id),
+  },
   // DevTools methods (only work in development mode)
   devtools: {
     wipeDatabase: () => ipcRenderer.invoke("devtools:wipeDatabase"),

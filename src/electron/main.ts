@@ -5,6 +5,7 @@ import { isDev } from "./util.js";
 import { initDatabase } from "./database.js";
 import { setupAuthHandlers } from "./auth-handlers.js";
 import { setupIngredientHandlers } from "./ingredient-handlers.js";
+import { setupRecipeHandlers } from "./recipe-handlers.js";
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -15,6 +16,7 @@ app.on("ready", () => {
   initDatabase();
   setupAuthHandlers();
   setupIngredientHandlers();
+  setupRecipeHandlers();
 
   const minWidth = 800;
   const minHeight = 600;

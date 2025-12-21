@@ -111,6 +111,7 @@ function App() {
               <Route path="/" element={<page.Home />} />
               <Route path="/ingredients" element={<page.Ingredients />} />
               <Route path="/recipes" element={<page.Recipes />} />
+              <Route path="/recipe/:id" element={<page.RecipeDetail />} />
               <Route path="/shopping" element={<page.ShoppingList />} />
             </Routes>
           </MainContent>
