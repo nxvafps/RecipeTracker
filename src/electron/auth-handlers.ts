@@ -4,7 +4,9 @@ import {
   loginUser,
   logoutUser,
   getCurrentUser,
+  wipeDatabase,
 } from "./database.js";
+import { isDev } from "./util.js";
 
 export function setupAuthHandlers() {
   // Register handler
@@ -25,5 +27,21 @@ export function setupAuthHandlers() {
   // Get current user handler
   ipcMain.handle("auth:getCurrentUser", async () => {
     return getCurrentUser();
+  });
+
+  // DevTools: Wipe database (only available in development)
+  ipcMain.handle("devtools:wipeDatabase", async () => {
+    if (!isDev()) {
+      return {
+        success: false,
+        message: "DevTools are only available in development mode",
+      };
+    }
+    return wipeDatabase();
+  });
+
+  // DevTools: Check if dev mode is enabled
+  ipcMain.handle("devtools:isDev", async () => {
+    return isDev();
   });
 }

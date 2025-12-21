@@ -175,4 +175,27 @@ export function getCurrentUser(): User | null {
   }
 }
 
+// Wipe database (for development only)
+export function wipeDatabase(): { success: boolean; message: string } {
+  try {
+    // Drop all tables
+    db.exec("DROP TABLE IF EXISTS active_session");
+    db.exec("DROP TABLE IF EXISTS users");
+    
+    // Reinitialize the database
+    initDatabase();
+    
+    return {
+      success: true,
+      message: "Database wiped and reinitialized successfully",
+    };
+  } catch (error: any) {
+    console.error("Failed to wipe database:", error);
+    return {
+      success: false,
+      message: "Failed to wipe database: " + error.message,
+    };
+  }
+}
+
 export { db };

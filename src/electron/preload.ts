@@ -10,4 +10,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     logout: () => ipcRenderer.invoke("auth:logout"),
     getCurrentUser: () => ipcRenderer.invoke("auth:getCurrentUser"),
   },
+  // DevTools methods (only work in development mode)
+  devtools: {
+    wipeDatabase: () => ipcRenderer.invoke("devtools:wipeDatabase"),
+    isDev: () => ipcRenderer.invoke("devtools:isDev"),
+  },
 });

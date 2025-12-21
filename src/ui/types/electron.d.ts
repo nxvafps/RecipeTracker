@@ -27,6 +27,10 @@ declare global {
           created_at: string;
         } | null>;
       };
+      devtools: {
+        wipeDatabase: () => Promise<{ success: boolean; message: string }>;
+        isDev: () => Promise<boolean>;
+      };
     };
   }
 }

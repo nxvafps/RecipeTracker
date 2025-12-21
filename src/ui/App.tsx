@@ -5,6 +5,7 @@ import { GlobalStyle, AppRoot, MainContent } from "./styles";
 import { ThemeProvider } from "styled-components";
 import theme from "./theme";
 import * as components from "./components";
+import * as devtools from "./components/devtools";
 
 interface User {
   id: number;
@@ -15,6 +16,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [isDev, setIsDev] = useState(false);
 
   // Check if user is already logged in on mount
   useEffect(() => {
@@ -24,6 +26,10 @@ function App() {
         if (currentUser) {
           setUser(currentUser);
         }
+        
+        // Check if running in dev mode
+        const devMode = await window.electronAPI.devtools.isDev();
+        setIsDev(devMode);
       } catch (error) {
         console.error("Failed to check auth status:", error);
       } finally {
@@ -85,6 +91,9 @@ function App() {
             onSwitchToLogin={() => setAuthMode("login")}
           />
         )}
+        
+        {/* DevTools panel - available on auth screens in dev mode */}
+        {isDev && <devtools.DevTools />}
       </ThemeProvider>
     );
   }
@@ -104,6 +113,9 @@ function App() {
               <Route path="/shopping" element={<page.ShoppingList />} />
             </Routes>
           </MainContent>
+          
+          {/* DevTools panel - only shown in development mode */}
+          {isDev && <devtools.DevTools />}
         </AppRoot>
       </ThemeProvider>
     </BrowserRouter>
