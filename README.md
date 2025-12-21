@@ -130,8 +130,6 @@ xattr -cr "Recipe Tracker.app"
 
 This removes the quarantine attribute that macOS applies to downloaded applications. After running this command, the app should open normally.
 
-**Alternative method:** Right-click the app, select "Open", then click "Open" in the dialog that appears.
-
 ### Available Scripts
 
 - `npm run dev` - Start development environment (React + Electron)
