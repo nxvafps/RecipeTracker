@@ -1,7 +1,7 @@
 {
   "name": "recipe-tracker",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.0",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
