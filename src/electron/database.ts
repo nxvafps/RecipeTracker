@@ -227,7 +227,11 @@ export function getCurrentUser(): User | null {
 // Wipe database (for development only)
 export function wipeDatabase(): { success: boolean; message: string } {
   try {
-    // Drop all tables
+    // Drop all tables in reverse order of dependencies
+    db.exec("DROP TABLE IF EXISTS recipe_instructions");
+    db.exec("DROP TABLE IF EXISTS recipe_ingredients");
+    db.exec("DROP TABLE IF EXISTS recipes");
+    db.exec("DROP TABLE IF EXISTS ingredients");
     db.exec("DROP TABLE IF EXISTS active_session");
     db.exec("DROP TABLE IF EXISTS users");
 
@@ -306,34 +310,211 @@ export function getDatabaseStats(): {
 // Seed database with sample data
 export function seedDatabase(): { success: boolean; message: string } {
   try {
-    // Create sample users
-    const sampleUsers = [
-      { username: "testuser1", password: "password123" },
-      { username: "testuser2", password: "password123" },
-      { username: "chef_john", password: "password123" },
-    ];
+    // Get all users from the database
+    const users = db.prepare("SELECT id, username FROM users").all() as Array<{
+      id: number;
+      username: string;
+    }>;
 
-    let createdCount = 0;
-    let existingCount = 0;
+    if (users.length === 0) {
+      return {
+        success: false,
+        message:
+          "No users found in the database. Please create a user account first.",
+      };
+    }
 
-    sampleUsers.forEach((user) => {
-      const result = registerUser(user.username, user.password);
-      if (result.success) {
-        createdCount++;
-      } else {
-        existingCount++;
+    let totalIngredientsCreated = 0;
+    let totalRecipesCreated = 0;
+    const usersSeeded: string[] = [];
+
+    // Seed data for each user
+    users.forEach((user) => {
+      const userId = user.id;
+      let ingredientsCreated = 0;
+      let recipesCreated = 0;
+
+      // Sample ingredients
+      const sampleIngredients = [
+        { name: "All-Purpose Flour", unit: "cup" },
+        { name: "Sugar", unit: "cup" },
+        { name: "Butter", unit: "tablespoon" },
+        { name: "Eggs", unit: "unit" },
+        { name: "Milk", unit: "cup" },
+        { name: "Salt", unit: "teaspoon" },
+        { name: "Baking Powder", unit: "teaspoon" },
+        { name: "Vanilla Extract", unit: "teaspoon" },
+        { name: "Chicken Breast", unit: "pound" },
+        { name: "Olive Oil", unit: "tablespoon" },
+        { name: "Garlic", unit: "clove" },
+        { name: "Onion", unit: "unit" },
+        { name: "Tomato", unit: "unit" },
+        { name: "Pasta", unit: "pound" },
+        { name: "Parmesan Cheese", unit: "cup" },
+      ];
+
+      const ingredientIds: number[] = [];
+      const insertIngredient = db.prepare(
+        "INSERT INTO ingredients (name, unit, user_id) VALUES (?, ?, ?)"
+      );
+
+      sampleIngredients.forEach((ingredient) => {
+        try {
+          const result = insertIngredient.run(
+            ingredient.name,
+            ingredient.unit,
+            userId
+          );
+          ingredientIds.push(result.lastInsertRowid as number);
+          ingredientsCreated++;
+        } catch (error) {
+          // Ingredient might already exist, skip it
+          console.log(
+            `Ingredient ${ingredient.name} for user ${user.username} might already exist`
+          );
+        }
+      });
+
+      // Sample recipes
+      if (ingredientIds.length >= 8) {
+        const sampleRecipes = [
+          {
+            name: "Classic Pancakes",
+            servings: 4,
+            timeNeeded: 20,
+            ingredients: [
+              { ingredientId: ingredientIds[0], quantity: "2" }, // Flour
+              { ingredientId: ingredientIds[1], quantity: "2" }, // Sugar
+              { ingredientId: ingredientIds[2], quantity: "2" }, // Butter
+              { ingredientId: ingredientIds[3], quantity: "2" }, // Eggs
+              { ingredientId: ingredientIds[4], quantity: "1.5" }, // Milk
+              { ingredientId: ingredientIds[6], quantity: "2" }, // Baking Powder
+            ],
+            instructions: [
+              "Mix dry ingredients (flour, sugar, baking powder) in a large bowl",
+              "In another bowl, whisk eggs, milk, and melted butter",
+              "Pour wet ingredients into dry ingredients and mix until just combined",
+              "Heat a griddle or pan over medium heat",
+              "Pour 1/4 cup of batter for each pancake",
+              "Cook until bubbles form on top, then flip and cook until golden brown",
+            ],
+          },
+          {
+            name: "Garlic Butter Chicken",
+            servings: 4,
+            timeNeeded: 30,
+            ingredients: [
+              { ingredientId: ingredientIds[8], quantity: "1.5" }, // Chicken
+              { ingredientId: ingredientIds[9], quantity: "2" }, // Olive Oil
+              { ingredientId: ingredientIds[10], quantity: "4" }, // Garlic
+              { ingredientId: ingredientIds[2], quantity: "3" }, // Butter
+              { ingredientId: ingredientIds[5], quantity: "1" }, // Salt
+            ],
+            instructions: [
+              "Season chicken breasts with salt and pepper",
+              "Heat olive oil in a large skillet over medium-high heat",
+              "Add chicken and cook for 6-7 minutes per side until golden and cooked through",
+              "Remove chicken and set aside",
+              "In the same pan, add butter and minced garlic",
+              "Cook garlic for 1-2 minutes until fragrant",
+              "Return chicken to pan and coat with garlic butter",
+              "Serve hot with your choice of sides",
+            ],
+          },
+          {
+            name: "Simple Pasta with Tomato",
+            servings: 2,
+            timeNeeded: 25,
+            ingredients: [
+              { ingredientId: ingredientIds[13], quantity: "0.5" }, // Pasta
+              { ingredientId: ingredientIds[12], quantity: "4" }, // Tomato
+              { ingredientId: ingredientIds[10], quantity: "3" }, // Garlic
+              { ingredientId: ingredientIds[9], quantity: "3" }, // Olive Oil
+              { ingredientId: ingredientIds[14], quantity: "0.5" }, // Parmesan
+              { ingredientId: ingredientIds[5], quantity: "1" }, // Salt
+            ],
+            instructions: [
+              "Bring a large pot of salted water to boil",
+              "Cook pasta according to package directions",
+              "Meanwhile, dice tomatoes and mince garlic",
+              "Heat olive oil in a pan and sauté garlic until fragrant",
+              "Add tomatoes and cook for 10 minutes until softened",
+              "Season with salt to taste",
+              "Drain pasta and toss with tomato sauce",
+              "Top with grated Parmesan cheese and serve",
+            ],
+          },
+        ];
+
+        const insertRecipe = db.prepare(
+          "INSERT INTO recipes (name, servings, time_needed, user_id) VALUES (?, ?, ?, ?)"
+        );
+        const insertRecipeIngredient = db.prepare(
+          "INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES (?, ?, ?)"
+        );
+        const insertInstruction = db.prepare(
+          "INSERT INTO recipe_instructions (recipe_id, step_number, instruction) VALUES (?, ?, ?)"
+        );
+
+        sampleRecipes.forEach((recipe) => {
+          try {
+            const recipeResult = insertRecipe.run(
+              recipe.name,
+              recipe.servings,
+              recipe.timeNeeded,
+              userId
+            );
+            const recipeId = recipeResult.lastInsertRowid as number;
+
+            // Insert recipe ingredients
+            recipe.ingredients.forEach((ing) => {
+              insertRecipeIngredient.run(
+                recipeId,
+                ing.ingredientId,
+                ing.quantity
+              );
+            });
+
+            // Insert instructions
+            recipe.instructions.forEach((instruction, index) => {
+              insertInstruction.run(recipeId, index + 1, instruction);
+            });
+
+            recipesCreated++;
+          } catch (error) {
+            console.log(`Failed to create recipe ${recipe.name}:`, error);
+          }
+        });
+      }
+
+      // Track users that had data seeded
+      if (ingredientsCreated > 0 || recipesCreated > 0) {
+        usersSeeded.push(user.username);
+        totalIngredientsCreated += ingredientsCreated;
+        totalRecipesCreated += recipesCreated;
       }
     });
 
-    if (createdCount > 0) {
+    const messages = [];
+    if (totalIngredientsCreated > 0) {
+      messages.push(`${totalIngredientsCreated} ingredient(s)`);
+    }
+    if (totalRecipesCreated > 0) {
+      messages.push(`${totalRecipesCreated} recipe(s)`);
+    }
+
+    if (messages.length > 0) {
       return {
         success: true,
-        message: `Created ${createdCount} new user(s). ${existingCount} user(s) already existed.`,
+        message: `Created ${messages.join(", ")} for ${
+          usersSeeded.length
+        } user(s): ${usersSeeded.join(", ")}.`,
       };
     } else {
       return {
         success: true,
-        message: `All ${sampleUsers.length} sample users already exist. No new users created.`,
+        message:
+          "All sample data already exists for all users. No new data created.",
       };
     }
   } catch (error: any) {
@@ -656,7 +837,10 @@ export function addRecipe(
       return { success: false, message: "At least one ingredient is required" };
     }
     if (!input.instructions || input.instructions.length === 0) {
-      return { success: false, message: "At least one instruction is required" };
+      return {
+        success: false,
+        message: "At least one instruction is required",
+      };
     }
 
     // Start transaction
@@ -889,4 +1073,3 @@ export function deleteRecipe(
     };
   }
 }
-

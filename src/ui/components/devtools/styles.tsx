@@ -36,7 +36,7 @@ export const DevToolsContainer = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   bottom: ${({ $isOpen }) => ($isOpen ? "80px" : "-600px")};
   right: 20px;
-  width: 500px;
+  width: min(500px, calc(100vw - 300px));
   max-width: calc(100vw - 40px);
   max-height: calc(100vh - 140px);
   background: ${({ theme }) => theme.colors.surface};
@@ -48,6 +48,12 @@ export const DevToolsContainer = styled.div<{ $isOpen: boolean }>`
   overflow: hidden;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 900px) {
+    width: calc(100vw - 40px);
+    right: 20px;
+    left: 20px;
+  }
 `;
 
 export const DevToolsHeader = styled.div`

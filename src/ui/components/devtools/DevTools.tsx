@@ -85,8 +85,15 @@ export const DevTools = () => {
       const result = await window.electronAPI.devtools.seedDatabase();
 
       if (result.success) {
-        setMessage({ text: result.message, type: "success" });
+        setMessage({
+          text: result.message + " Refreshing page...",
+          type: "success",
+        });
         loadStats(); // Refresh stats
+        // Reload the page to show the newly seeded data
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
         setMessage({ text: result.message, type: "error" });
       }
