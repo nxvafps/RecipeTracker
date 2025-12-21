@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import * as page from "./pages";
 import { GlobalStyle, AppRoot, MainContent } from "./styles";
@@ -100,7 +100,7 @@ function App() {
 
   // Show main app if logged in
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ThemeProvider theme={theme}>
         <GlobalStyle theme={theme} />
         <AppRoot>
@@ -120,7 +120,7 @@ function App() {
           {isDev && <devtools.DevTools />}
         </AppRoot>
       </ThemeProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
