@@ -178,6 +178,59 @@ declare global {
         }>;
         delete: (id: number) => Promise<{ success: boolean; message: string }>;
       };
+      shoppingList: {
+        addItems: (
+          items: Array<{
+            ingredientId?: number;
+            ingredientName: string;
+            ingredientUnit: string;
+            quantity: string;
+          }>
+        ) => Promise<{
+          success: boolean;
+          message: string;
+          items?: Array<{
+            id: number;
+            ingredient_id: number | null;
+            ingredient_name: string;
+            ingredient_unit: string;
+            quantity: string;
+            user_id: number;
+            created_at: string;
+          }>;
+        }>;
+        getAll: () => Promise<{
+          success: boolean;
+          items?: Array<{
+            id: number;
+            ingredient_id: number | null;
+            ingredient_name: string;
+            ingredient_unit: string;
+            quantity: string;
+            user_id: number;
+            created_at: string;
+          }>;
+          message?: string;
+        }>;
+        update: (
+          id: number,
+          quantity: string
+        ) => Promise<{
+          success: boolean;
+          message: string;
+          item?: {
+            id: number;
+            ingredient_id: number | null;
+            ingredient_name: string;
+            ingredient_unit: string;
+            quantity: string;
+            user_id: number;
+            created_at: string;
+          };
+        }>;
+        delete: (id: number) => Promise<{ success: boolean; message: string }>;
+        clear: () => Promise<{ success: boolean; message: string }>;
+      };
       devtools: {
         wipeDatabase: () => Promise<{ success: boolean; message: string }>;
         isDev: () => Promise<boolean>;

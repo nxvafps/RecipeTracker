@@ -77,6 +77,21 @@ export function initDatabase() {
     )
   `);
 
+  // Create shopping_list_items table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS shopping_list_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ingredient_id INTEGER,
+      ingredient_name TEXT NOT NULL,
+      ingredient_unit TEXT NOT NULL,
+      quantity TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (ingredient_id) REFERENCES ingredients(id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
   console.log("Database initialized at:", dbPath);
 }
 
@@ -1070,6 +1085,235 @@ export function deleteRecipe(
     return {
       success: false,
       message: "Failed to delete recipe: " + error.message,
+    };
+  }
+}
+
+// Shopping List interfaces and functions
+export interface ShoppingListItem {
+  id: number;
+  ingredient_id: number | null;
+  ingredient_name: string;
+  ingredient_unit: string;
+  quantity: string;
+  user_id: number;
+  created_at: string;
+}
+
+export interface ShoppingListItemInput {
+  ingredientId?: number;
+  ingredientName: string;
+  ingredientUnit: string;
+  quantity: string;
+}
+
+// Add items to shopping list (with ingredient combining logic)
+export function addToShoppingList(
+  items: ShoppingListItemInput[],
+  userId: number
+): { success: boolean; message: string; items?: ShoppingListItem[] } {
+  try {
+    if (!items || items.length === 0) {
+      return {
+        success: false,
+        message: "No items to add",
+      };
+    }
+
+    // Get existing shopping list items
+    const existingItems = db
+      .prepare("SELECT * FROM shopping_list_items WHERE user_id = ?")
+      .all(userId) as ShoppingListItem[];
+
+    // Create a map to combine quantities
+    const itemMap = new Map<string, ShoppingListItem>();
+    
+    // Add existing items to map
+    existingItems.forEach((item) => {
+      const key = `${item.ingredient_name}|${item.ingredient_unit}`;
+      itemMap.set(key, item);
+    });
+
+    // Process new items
+    const insertStmt = db.prepare(
+      "INSERT INTO shopping_list_items (ingredient_id, ingredient_name, ingredient_unit, quantity, user_id) VALUES (?, ?, ?, ?, ?)"
+    );
+    const updateStmt = db.prepare(
+      "UPDATE shopping_list_items SET quantity = ? WHERE id = ?"
+    );
+
+    items.forEach((item) => {
+      const key = `${item.ingredientName}|${item.ingredientUnit}`;
+      const existing = itemMap.get(key);
+
+      if (existing) {
+        // Combine quantities (simple string concatenation for now, can be enhanced)
+        const newQuantity = combineQuantities(existing.quantity, item.quantity);
+        updateStmt.run(newQuantity, existing.id);
+        existing.quantity = newQuantity;
+      } else {
+        // Insert new item
+        const result = insertStmt.run(
+          item.ingredientId || null,
+          item.ingredientName,
+          item.ingredientUnit,
+          item.quantity,
+          userId
+        );
+        const newItem: ShoppingListItem = {
+          id: result.lastInsertRowid as number,
+          ingredient_id: item.ingredientId || null,
+          ingredient_name: item.ingredientName,
+          ingredient_unit: item.ingredientUnit,
+          quantity: item.quantity,
+          user_id: userId,
+          created_at: new Date().toISOString(),
+        };
+        itemMap.set(key, newItem);
+      }
+    });
+
+    return {
+      success: true,
+      message: `Added ${items.length} item(s) to shopping list`,
+      items: Array.from(itemMap.values()),
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to add items to shopping list: " + error.message,
+    };
+  }
+}
+
+// Helper function to combine quantities
+function combineQuantities(qty1: string, qty2: string): string {
+  // Try to parse as numbers and add
+  const num1 = parseFloat(qty1);
+  const num2 = parseFloat(qty2);
+  
+  if (!isNaN(num1) && !isNaN(num2)) {
+    return (num1 + num2).toString();
+  }
+  
+  // If can't parse, concatenate with a separator
+  return `${qty1} + ${qty2}`;
+}
+
+// Get all shopping list items for a user
+export function getShoppingList(userId: number): {
+  success: boolean;
+  items?: ShoppingListItem[];
+  message?: string;
+} {
+  try {
+    const stmt = db.prepare(
+      "SELECT * FROM shopping_list_items WHERE user_id = ? ORDER BY created_at DESC"
+    );
+    const items = stmt.all(userId) as ShoppingListItem[];
+
+    return {
+      success: true,
+      items,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to get shopping list: " + error.message,
+    };
+  }
+}
+
+// Update a shopping list item
+export function updateShoppingListItem(
+  id: number,
+  quantity: string,
+  userId: number
+): { success: boolean; message: string; item?: ShoppingListItem } {
+  try {
+    if (!quantity || quantity.trim().length === 0) {
+      return {
+        success: false,
+        message: "Quantity is required",
+      };
+    }
+
+    const stmt = db.prepare(
+      "UPDATE shopping_list_items SET quantity = ? WHERE id = ? AND user_id = ?"
+    );
+    const result = stmt.run(quantity.trim(), id, userId);
+
+    if (result.changes === 0) {
+      return {
+        success: false,
+        message: "Item not found or not authorized",
+      };
+    }
+
+    const updatedItem = db
+      .prepare("SELECT * FROM shopping_list_items WHERE id = ?")
+      .get(id) as ShoppingListItem;
+
+    return {
+      success: true,
+      message: "Item updated successfully",
+      item: updatedItem,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to update item: " + error.message,
+    };
+  }
+}
+
+// Delete a shopping list item
+export function deleteShoppingListItem(
+  id: number,
+  userId: number
+): { success: boolean; message: string } {
+  try {
+    const stmt = db.prepare(
+      "DELETE FROM shopping_list_items WHERE id = ? AND user_id = ?"
+    );
+    const result = stmt.run(id, userId);
+
+    if (result.changes === 0) {
+      return {
+        success: false,
+        message: "Item not found or not authorized",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Item deleted successfully",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to delete item: " + error.message,
+    };
+  }
+}
+
+// Clear all shopping list items for a user
+export function clearShoppingList(userId: number): {
+  success: boolean;
+  message: string;
+} {
+  try {
+    const stmt = db.prepare("DELETE FROM shopping_list_items WHERE user_id = ?");
+    const result = stmt.run(userId);
+
+    return {
+      success: true,
+      message: `Cleared ${result.changes} item(s) from shopping list`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to clear shopping list: " + error.message,
     };
   }
 }

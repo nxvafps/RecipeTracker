@@ -28,6 +28,16 @@ contextBridge.exposeInMainWorld("electronAPI", {
       ipcRenderer.invoke("recipes:update", id, input),
     delete: (id: number) => ipcRenderer.invoke("recipes:delete", id),
   },
+  // Shopping List methods
+  shoppingList: {
+    addItems: (items: any[]) =>
+      ipcRenderer.invoke("shoppingList:addItems", items),
+    getAll: () => ipcRenderer.invoke("shoppingList:getAll"),
+    update: (id: number, quantity: string) =>
+      ipcRenderer.invoke("shoppingList:update", id, quantity),
+    delete: (id: number) => ipcRenderer.invoke("shoppingList:delete", id),
+    clear: () => ipcRenderer.invoke("shoppingList:clear"),
+  },
   // DevTools methods (only work in development mode)
   devtools: {
     wipeDatabase: () => ipcRenderer.invoke("devtools:wipeDatabase"),

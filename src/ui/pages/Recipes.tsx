@@ -129,6 +129,47 @@ const ButtonGroup = styled.div`
   flex-shrink: 0;
 `;
 
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+`;
+
+const Checkbox = styled.input`
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: ${({ theme }) => theme.colors.primary};
+`;
+
+const ShoppingListButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.background};
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 1rem;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primaryHover};
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.active};
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
 const EditButton = styled.button`
   padding: 0.5rem 1rem;
   background: ${({ theme }) => theme.colors.buttonBg};
@@ -464,6 +505,8 @@ export const Recipes = () => {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [selectedRecipes, setSelectedRecipes] = useState<Set<number>>(new Set());
+  const [isAddingToShoppingList, setIsAddingToShoppingList] = useState(false);
 
   // Ingredient modal state
   const [isIngredientModalOpen, setIsIngredientModalOpen] = useState(false);
@@ -583,6 +626,67 @@ export const Recipes = () => {
       }
     } catch (err) {
       setError("An error occurred while deleting recipe");
+    }
+  };
+
+  const handleRecipeCheckboxChange = (recipeId: number, checked: boolean) => {
+    const newSelected = new Set(selectedRecipes);
+    if (checked) {
+      newSelected.add(recipeId);
+    } else {
+      newSelected.delete(recipeId);
+    }
+    setSelectedRecipes(newSelected);
+  };
+
+  const handleAddToShoppingList = async () => {
+    if (selectedRecipes.size === 0) return;
+
+    setIsAddingToShoppingList(true);
+    try {
+      // Fetch full recipe details for all selected recipes
+      const selectedRecipeDetails = await Promise.all(
+        Array.from(selectedRecipes).map(id => 
+          window.electronAPI.recipes.getById(id)
+        )
+      );
+
+      // Collect all ingredients from selected recipes
+      const itemsToAdd: Array<{
+        ingredientId?: number;
+        ingredientName: string;
+        ingredientUnit: string;
+        quantity: string;
+      }> = [];
+
+      selectedRecipeDetails.forEach(result => {
+        if (result.success && result.recipe) {
+          result.recipe.ingredients.forEach(ing => {
+            itemsToAdd.push({
+              ingredientId: ing.ingredient_id,
+              ingredientName: ing.ingredient_name || '',
+              ingredientUnit: ing.ingredient_unit || '',
+              quantity: ing.quantity,
+            });
+          });
+        }
+      });
+
+      // Add items to shopping list (backend will handle combining duplicates)
+      const addResult = await window.electronAPI.shoppingList.addItems(itemsToAdd);
+      
+      if (addResult.success) {
+        // Clear selection after successful add
+        setSelectedRecipes(new Set());
+        alert(`Successfully added ingredients from ${selectedRecipes.size} recipe(s) to shopping list!`);
+      } else {
+        alert(addResult.message || "Failed to add items to shopping list");
+      }
+    } catch (err) {
+      console.error("Error adding to shopping list:", err);
+      alert("An error occurred while adding to shopping list");
+    } finally {
+      setIsAddingToShoppingList(false);
     }
   };
 
@@ -784,7 +888,20 @@ export const Recipes = () => {
     <Container>
       <Header>
         <Title>Recipes</Title>
-        <AddButton onClick={openModal}>Add Recipe</AddButton>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {selectedRecipes.size > 0 && (
+            <ShoppingListButton
+              onClick={handleAddToShoppingList}
+              disabled={isAddingToShoppingList}
+            >
+              {isAddingToShoppingList 
+                ? 'Adding...' 
+                : `Add ${selectedRecipes.size} Recipe${selectedRecipes.size > 1 ? 's' : ''} to Shopping List`
+              }
+            </ShoppingListButton>
+          )}
+          <AddButton onClick={openModal}>Add Recipe</AddButton>
+        </div>
       </Header>
 
       {!isLoading && recipes.length > 0 && (
@@ -824,6 +941,17 @@ export const Recipes = () => {
                     <InfoItem>⏱️ {recipe.time_needed} min</InfoItem>
                   </RecipeInfo>
                 </RecipeContent>
+                <CheckboxWrapper>
+                  <Checkbox
+                    type="checkbox"
+                    checked={selectedRecipes.has(recipe.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleRecipeCheckboxChange(recipe.id, e.target.checked);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </CheckboxWrapper>
               </RecipeHeader>
               <ButtonGroup>
                 <EditButton
