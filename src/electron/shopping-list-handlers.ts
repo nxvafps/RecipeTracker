@@ -6,8 +6,8 @@ import {
   deleteShoppingListItem,
   clearShoppingList,
   getCurrentUser,
-  ShoppingListItemInput,
 } from "./database.js";
+import type { ShoppingListItemInput } from "./database.js";
 
 export function setupShoppingListHandlers() {
   // Add items to shopping list

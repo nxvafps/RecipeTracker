@@ -6,10 +6,10 @@ import {
   updateRecipe,
   deleteRecipe,
   getCurrentUser,
-  RecipeInput,
   getIngredients,
   addIngredient,
 } from "./database.js";
+import type { RecipeInput } from "./database.js";
 import fs from "fs";
 import path from "path";
 

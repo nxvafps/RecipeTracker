@@ -3,13 +3,27 @@
   "files": ["dist-electron", "dist-react"],
   "icon": "./desktopIcon.png",
   "mac": {
-    "target": "dmg"
-  },
-  "linux": {
-    "target": "AppImage",
-    "category": "Utility"
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["arm64"]
+      }
+    ]
   },
   "win": {
-    "target": ["portable", "msi"]
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "linux": {
+    "target": [
+      {
+        "target": "AppImage",
+        "arch": ["x64"]
+      }
+    ]
   }
 }
