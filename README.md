@@ -114,6 +114,24 @@ npm run dist:linux
 
 Build output will be in the `dist/` directory.
 
+#### macOS Code Signing
+
+Since this is an open-source application, the macOS build is not code-signed with an Apple Developer certificate. When you first open the app, macOS Gatekeeper may prevent it from running.
+
+**To bypass this warning:**
+
+1. Open Terminal
+2. Navigate to where you extracted the app (e.g., `/Applications`)
+3. Run the following command:
+
+```bash
+xattr -cr "Recipe Tracker.app"
+```
+
+This removes the quarantine attribute that macOS applies to downloaded applications. After running this command, the app should open normally.
+
+**Alternative method:** Right-click the app, select "Open", then click "Open" in the dialog that appears.
+
 ### Available Scripts
 
 - `npm run dev` - Start development environment (React + Electron)
