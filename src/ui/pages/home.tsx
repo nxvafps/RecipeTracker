@@ -1,5 +1,5 @@
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 
 const HomeContainer = styled.div`
   max-width: 900px;
@@ -12,7 +12,11 @@ const Hero = styled.div`
 const Title = styled.h1`
   font-size: 3rem;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.text});
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.primary},
+    ${({ theme }) => theme.colors.text}
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -96,36 +100,37 @@ export const Home = () => {
       <Hero>
         <Title>Recipe Planner</Title>
         <Subtitle>
-          Your personal kitchen companion for organizing recipes, tracking ingredients, 
-          and creating smart shopping lists. Cook smarter, not harder.
+          Your personal kitchen companion for organizing recipes, tracking
+          ingredients, and creating smart shopping lists. Cook smarter, not
+          harder.
         </Subtitle>
       </Hero>
 
       <FeatureGrid>
-        <FeatureCard onClick={() => navigate('/recipes')}>
+        <FeatureCard onClick={() => navigate("/recipes")}>
           <FeatureIcon>📚</FeatureIcon>
           <FeatureTitle>Recipe Library</FeatureTitle>
           <FeatureDescription>
-            Store and organize all your favorite recipes in one place. 
-            Add notes, ratings, and cooking times.
+            Store and organize all your favorite recipes in one place. Add
+            notes, ratings, and cooking times.
           </FeatureDescription>
         </FeatureCard>
 
-        <FeatureCard onClick={() => navigate('/ingredients')}>
+        <FeatureCard onClick={() => navigate("/ingredients")}>
           <FeatureIcon>🥗</FeatureIcon>
           <FeatureTitle>Ingredient Management</FeatureTitle>
           <FeatureDescription>
-            Keep track of ingredients, their quantities, and categories. 
-            Never forget what's in your pantry.
+            Keep track of ingredients, their quantities, and categories. Never
+            forget what's in your pantry.
           </FeatureDescription>
         </FeatureCard>
 
-        <FeatureCard onClick={() => navigate('/shopping')}>
+        <FeatureCard onClick={() => navigate("/shopping")}>
           <FeatureIcon>🛒</FeatureIcon>
           <FeatureTitle>Shopping Lists</FeatureTitle>
           <FeatureDescription>
-            Generate smart shopping lists from your recipes. 
-            Check off items as you shop.
+            Generate smart shopping lists from your recipes. Check off items as
+            you shop.
           </FeatureDescription>
         </FeatureCard>
       </FeatureGrid>

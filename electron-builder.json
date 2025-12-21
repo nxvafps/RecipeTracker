@@ -2,6 +2,8 @@
   "appId": "com.abbie-quirk.recipe-manager",
   "files": ["dist-electron", "dist-react"],
   "icon": "./desktopIcon.png",
+  "npmRebuild": true,
+  "buildDependenciesFromSource": true,
   "mac": {
     "target": [
       {
