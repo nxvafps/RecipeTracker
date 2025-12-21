@@ -177,6 +177,18 @@ declare global {
           };
         }>;
         delete: (id: number) => Promise<{ success: boolean; message: string }>;
+        export: (recipeIds: number[]) => Promise<{
+          success: boolean;
+          message: string;
+          filepath?: string;
+          filename?: string;
+        }>;
+        import: () => Promise<{
+          success: boolean;
+          message: string;
+          imported?: number;
+          failed?: number;
+        }>;
       };
       shoppingList: {
         addItems: (

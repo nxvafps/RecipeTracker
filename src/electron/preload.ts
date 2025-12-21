@@ -27,6 +27,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     update: (id: number, input: any) =>
       ipcRenderer.invoke("recipes:update", id, input),
     delete: (id: number) => ipcRenderer.invoke("recipes:delete", id),
+    export: (recipeIds: number[]) =>
+      ipcRenderer.invoke("recipes:export", recipeIds),
+    import: () => ipcRenderer.invoke("recipes:import"),
   },
   // Shopping List methods
   shoppingList: {

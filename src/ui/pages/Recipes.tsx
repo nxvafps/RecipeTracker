@@ -509,6 +509,8 @@ export const Recipes = () => {
     new Set()
   );
   const [isAddingToShoppingList, setIsAddingToShoppingList] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Ingredient modal state
   const [isIngredientModalOpen, setIsIngredientModalOpen] = useState(false);
@@ -693,6 +695,50 @@ export const Recipes = () => {
       alert("An error occurred while adding to shopping list");
     } finally {
       setIsAddingToShoppingList(false);
+    }
+  };
+
+  const handleExportRecipes = async () => {
+    if (selectedRecipes.size === 0) return;
+
+    setIsExporting(true);
+    try {
+      const result = await window.electronAPI.recipes.export(
+        Array.from(selectedRecipes)
+      );
+
+      if (result.success) {
+        alert(`${result.message}\nSaved to: ${result.filename}`);
+        // Clear selection after successful export
+        setSelectedRecipes(new Set());
+      } else {
+        alert(result.message || "Failed to export recipes");
+      }
+    } catch (err) {
+      console.error("Error exporting recipes:", err);
+      alert("An error occurred while exporting recipes");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportRecipes = async () => {
+    setIsImporting(true);
+    try {
+      const result = await window.electronAPI.recipes.import();
+
+      if (result.success) {
+        alert(result.message);
+        // Reload recipes after import
+        await loadRecipes();
+      } else if (result.message !== "Import cancelled") {
+        alert(result.message || "Failed to import recipes");
+      }
+    } catch (err) {
+      console.error("Error importing recipes:", err);
+      alert("An error occurred while importing recipes");
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -894,19 +940,37 @@ export const Recipes = () => {
     <Container>
       <Header>
         <Title>Recipes</Title>
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           {selectedRecipes.size > 0 && (
-            <ShoppingListButton
-              onClick={handleAddToShoppingList}
-              disabled={isAddingToShoppingList}
-            >
-              {isAddingToShoppingList
-                ? "Adding..."
-                : `Add ${selectedRecipes.size} Recipe${
-                    selectedRecipes.size > 1 ? "s" : ""
-                  } to Shopping List`}
-            </ShoppingListButton>
+            <>
+              <ShoppingListButton
+                onClick={handleAddToShoppingList}
+                disabled={isAddingToShoppingList}
+              >
+                {isAddingToShoppingList
+                  ? "Adding..."
+                  : `Add ${selectedRecipes.size} Recipe${
+                      selectedRecipes.size > 1 ? "s" : ""
+                    } to Shopping List`}
+              </ShoppingListButton>
+              <ShoppingListButton
+                onClick={handleExportRecipes}
+                disabled={isExporting}
+              >
+                {isExporting
+                  ? "Exporting..."
+                  : `Export ${selectedRecipes.size} Recipe${
+                      selectedRecipes.size > 1 ? "s" : ""
+                    }`}
+              </ShoppingListButton>
+            </>
           )}
+          <ShoppingListButton
+            onClick={handleImportRecipes}
+            disabled={isImporting}
+          >
+            {isImporting ? "Importing..." : "Import Recipes"}
+          </ShoppingListButton>
           <AddButton onClick={openModal}>Add Recipe</AddButton>
         </div>
       </Header>
