@@ -12,9 +12,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "transpile:electron": "tsc --project src/electron/tsconfig.json && tsc --project src/electron/tsconfig.preload.json",
-    "dist:mac": "npm run transpile:electron && npm run build && electron-builder --mac --arm64",
-    "dist:win": "npm run transpile:electron && npm run build && electron-builder --win --x64",
-    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64",
+    "dist:mac": "npm run transpile:electron && npm run build && electron-builder --mac --arm64 --publish never",
+    "dist:win": "npm run transpile:electron && npm run build && electron-builder --win --x64 --publish never",
+    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --linux --x64 --publish never",
     "dist:all": "npm run transpile:electron && npm run build && electron-builder --mac --arm64 --win --x64 --linux --x64",
     "rebuild": "electron-rebuild -f -w better-sqlite3"
   },

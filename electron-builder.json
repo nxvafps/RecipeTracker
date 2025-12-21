@@ -11,8 +11,7 @@
         "arch": "arm64"
       }
     ],
-    "category": "public.app-category.lifestyle",
-    "identity": "abbie quirk"
+    "category": "public.app-category.lifestyle"
   },
   "win": {
     "target": [
