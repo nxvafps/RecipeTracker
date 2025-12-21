@@ -19,6 +19,7 @@ export const Ingredients = () => {
     unit: "",
   });
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     loadIngredients();
@@ -118,6 +119,10 @@ export const Ingredients = () => {
     setError("");
   };
 
+  const filteredIngredients = ingredients.filter((ingredient) =>
+    ingredient.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Container>
       <Header>
@@ -125,15 +130,30 @@ export const Ingredients = () => {
         <AddButton onClick={handleAddNew}>Add Ingredient</AddButton>
       </Header>
 
+      {!isLoading && ingredients.length > 0 && (
+        <SearchBar>
+          <SearchInput
+            type="text"
+            placeholder="Search ingredients..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </SearchBar>
+      )}
+
       {isLoading ? (
         <LoadingMessage>Loading ingredients...</LoadingMessage>
       ) : ingredients.length === 0 ? (
         <EmptyState>
           <EmptyText>No ingredients, add one now</EmptyText>
         </EmptyState>
+      ) : filteredIngredients.length === 0 ? (
+        <EmptyState>
+          <EmptyText>No ingredients found matching "{searchQuery}"</EmptyText>
+        </EmptyState>
       ) : (
         <IngredientsList>
-          {ingredients.map((ingredient) => (
+          {filteredIngredients.map((ingredient) => (
             <IngredientCard key={ingredient.id}>
               <IngredientInfo>
                 <IngredientName>{ingredient.name}</IngredientName>
@@ -270,10 +290,36 @@ const EmptyText = styled.p`
   margin: 0;
 `;
 
+const SearchBar = styled.div`
+  margin-bottom: 1.5rem;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: 8px;
+  font-size: 1rem;
+  color: ${({ theme }) => theme.colors.text};
+  background: ${({ theme }) => theme.colors.surface};
+  transition: all 0.2s;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
+  }
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
+`;
+
 const IngredientsList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const IngredientCard = styled.div`
@@ -282,7 +328,8 @@ const IngredientCard = styled.div`
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   gap: 1rem;
   transition: all 0.2s;
 
@@ -313,6 +360,7 @@ const IngredientUnit = styled.p`
 const ButtonGroup = styled.div`
   display: flex;
   gap: 0.75rem;
+  flex-shrink: 0;
 `;
 
 const EditButton = styled.button`
