@@ -34,10 +34,11 @@ export const ToggleButton = styled.button<{ $isOpen: boolean }>`
 
 export const DevToolsContainer = styled.div<{ $isOpen: boolean }>`
   position: fixed;
-  bottom: ${({ $isOpen }) => ($isOpen ? "80px" : "-400px")};
+  bottom: ${({ $isOpen }) => ($isOpen ? "80px" : "-600px")};
   right: 20px;
-  width: 400px;
+  width: 500px;
   max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 140px);
   background: ${({ theme }) => theme.colors.surface};
   border: 2px solid ${({ theme }) => theme.colors.primary};
   border-radius: 12px;
@@ -45,6 +46,8 @@ export const DevToolsContainer = styled.div<{ $isOpen: boolean }>`
   transition: bottom 0.3s ease;
   z-index: 998;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const DevToolsHeader = styled.div`
@@ -64,6 +67,90 @@ export const DevToolsHeader = styled.div`
 export const DevToolsContent = styled.div`
   padding: 20px;
   color: ${({ theme }) => theme.colors.text};
+  overflow-y: auto;
+  flex: 1;
+`;
+
+export const TabContainer = styled.div`
+  display: flex;
+  border-bottom: 2px solid ${({ theme }) => theme.colors.primary}33;
+  background: ${({ theme }) => theme.colors.background};
+`;
+
+export const Tab = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors.surface : "transparent"};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors.primary : theme.colors.text};
+  font-size: 0.9rem;
+  font-weight: ${({ $active }) => ($active ? "600" : "400")};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid
+    ${({ $active, theme }) => ($active ? theme.colors.primary : "transparent")};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.surface};
+  }
+`;
+
+export const StatBox = styled.div`
+  background: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.primary}33;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+
+  h5 {
+    margin: 0 0 8px 0;
+    font-size: 0.85rem;
+    color: ${({ theme }) => theme.colors.primary};
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  p {
+    margin: 4px 0;
+    font-size: 0.9rem;
+  }
+
+  strong {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const QueryInput = styled.textarea`
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.primary}33;
+  border-radius: 8px;
+  background: ${({ theme }) => theme.colors.background};
+  color: ${({ theme }) => theme.colors.text};
+  font-family: "Courier New", monospace;
+  font-size: 0.85rem;
+  resize: vertical;
+  margin-bottom: 12px;
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const QueryResults = styled.pre`
+  background: ${({ theme }) => theme.colors.background};
+  border: 1px solid ${({ theme }) => theme.colors.primary}33;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  max-height: 300px;
+  overflow-y: auto;
 `;
 
 export const DevToolsButton = styled.button<{

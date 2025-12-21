@@ -30,6 +30,27 @@ declare global {
       devtools: {
         wipeDatabase: () => Promise<{ success: boolean; message: string }>;
         isDev: () => Promise<boolean>;
+        getDatabaseStats: () => Promise<{
+          success: boolean;
+          stats?: {
+            userCount: number;
+            tables: Array<{ name: string; rowCount: number }>;
+            dbPath: string;
+            fileSize: number;
+          };
+          message?: string;
+        }>;
+        seedDatabase: () => Promise<{ success: boolean; message: string }>;
+        exportDatabase: () => Promise<{
+          success: boolean;
+          data?: any;
+          message?: string;
+        }>;
+        executeQuery: (query: string) => Promise<{
+          success: boolean;
+          results?: any;
+          message?: string;
+        }>;
       };
     };
   }

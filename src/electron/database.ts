@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import { app } from "electron";
 import bcrypt from "bcryptjs";
+import fs from "fs";
 
 const dbPath = path.join(app.getPath("userData"), "recipe-tracker.db");
 const db = new Database(dbPath);
@@ -194,6 +195,197 @@ export function wipeDatabase(): { success: boolean; message: string } {
     return {
       success: false,
       message: "Failed to wipe database: " + error.message,
+    };
+  }
+}
+
+// Get database statistics
+export function getDatabaseStats(): {
+  success: boolean;
+  stats?: {
+    userCount: number;
+    tables: Array<{ name: string; rowCount: number }>;
+    dbPath: string;
+    fileSize: number;
+  };
+  message?: string;
+} {
+  try {
+    // Get user count
+    const userCount = db
+      .prepare("SELECT COUNT(*) as count FROM users")
+      .get() as { count: number };
+
+    // Get all tables
+    const tables = db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+      )
+      .all() as Array<{ name: string }>;
+
+    // Get row count for each table
+    const tableStats = tables.map((table) => {
+      const result = db
+        .prepare(`SELECT COUNT(*) as count FROM ${table.name}`)
+        .get() as { count: number };
+      return {
+        name: table.name,
+        rowCount: result.count,
+      };
+    });
+
+    // Get file size
+    const stats = fs.statSync(dbPath);
+    const fileSizeInBytes = stats.size;
+
+    return {
+      success: true,
+      stats: {
+        userCount: userCount.count,
+        tables: tableStats,
+        dbPath,
+        fileSize: fileSizeInBytes,
+      },
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to get database stats: " + error.message,
+    };
+  }
+}
+
+// Seed database with sample data
+export function seedDatabase(): { success: boolean; message: string } {
+  try {
+    // Create sample users
+    const sampleUsers = [
+      { username: "testuser1", password: "password123" },
+      { username: "testuser2", password: "password123" },
+      { username: "chef_john", password: "password123" },
+    ];
+
+    let createdCount = 0;
+    let existingCount = 0;
+
+    sampleUsers.forEach((user) => {
+      const result = registerUser(user.username, user.password);
+      if (result.success) {
+        createdCount++;
+      } else {
+        existingCount++;
+      }
+    });
+
+    if (createdCount > 0) {
+      return {
+        success: true,
+        message: `Created ${createdCount} new user(s). ${existingCount} user(s) already existed.`,
+      };
+    } else {
+      return {
+        success: true,
+        message: `All ${sampleUsers.length} sample users already exist. No new users created.`,
+      };
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to seed database: " + error.message,
+    };
+  }
+}
+
+// Export database data as JSON
+export function exportDatabaseData(): {
+  success: boolean;
+  data?: any;
+  message?: string;
+} {
+  try {
+    const users = db
+      .prepare("SELECT id, username, created_at FROM users")
+      .all();
+    const activeSession = db.prepare("SELECT * FROM active_session").all();
+
+    return {
+      success: true,
+      data: {
+        users,
+        activeSession,
+        exportedAt: new Date().toISOString(),
+      },
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to export database: " + error.message,
+    };
+  }
+}
+
+// Import database data from JSON
+export function importDatabaseData(data: any): {
+  success: boolean;
+  message: string;
+} {
+  try {
+    // This is a simplified import - in production you'd want more validation
+    if (data.users && Array.isArray(data.users)) {
+      // Clear existing data
+      db.prepare("DELETE FROM active_session").run();
+      db.prepare("DELETE FROM users").run();
+
+      // Note: This won't import passwords, users will need to re-register
+      // This is intentional for security
+      return {
+        success: false,
+        message:
+          "Import not fully implemented - would need to handle password hashing",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Invalid import data format",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to import database: " + error.message,
+    };
+  }
+}
+
+// Execute custom SQL query (read-only for safety)
+export function executeQuery(query: string): {
+  success: boolean;
+  results?: any;
+  message?: string;
+} {
+  try {
+    // Only allow SELECT queries for safety
+    const trimmedQuery = query.trim().toUpperCase();
+    if (
+      !trimmedQuery.startsWith("SELECT") &&
+      !trimmedQuery.startsWith("PRAGMA")
+    ) {
+      return {
+        success: false,
+        message: "Only SELECT and PRAGMA queries are allowed for safety",
+      };
+    }
+
+    const results = db.prepare(query).all();
+
+    return {
+      success: true,
+      results,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Query failed: " + error.message,
     };
   }
 }

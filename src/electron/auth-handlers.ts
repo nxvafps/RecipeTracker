@@ -5,6 +5,10 @@ import {
   logoutUser,
   getCurrentUser,
   wipeDatabase,
+  getDatabaseStats,
+  seedDatabase,
+  exportDatabaseData,
+  executeQuery,
 } from "./database.js";
 import { isDev } from "./util.js";
 
@@ -43,5 +47,49 @@ export function setupAuthHandlers() {
   // DevTools: Check if dev mode is enabled
   ipcMain.handle("devtools:isDev", async () => {
     return isDev();
+  });
+
+  // DevTools: Get database stats
+  ipcMain.handle("devtools:getDatabaseStats", async () => {
+    if (!isDev()) {
+      return {
+        success: false,
+        message: "DevTools are only available in development mode",
+      };
+    }
+    return getDatabaseStats();
+  });
+
+  // DevTools: Seed database with sample data
+  ipcMain.handle("devtools:seedDatabase", async () => {
+    if (!isDev()) {
+      return {
+        success: false,
+        message: "DevTools are only available in development mode",
+      };
+    }
+    return seedDatabase();
+  });
+
+  // DevTools: Export database data
+  ipcMain.handle("devtools:exportDatabase", async () => {
+    if (!isDev()) {
+      return {
+        success: false,
+        message: "DevTools are only available in development mode",
+      };
+    }
+    return exportDatabaseData();
+  });
+
+  // DevTools: Execute SQL query
+  ipcMain.handle("devtools:executeQuery", async (_event, query: string) => {
+    if (!isDev()) {
+      return {
+        success: false,
+        message: "DevTools are only available in development mode",
+      };
+    }
+    return executeQuery(query);
   });
 }

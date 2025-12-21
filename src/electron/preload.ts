@@ -14,5 +14,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   devtools: {
     wipeDatabase: () => ipcRenderer.invoke("devtools:wipeDatabase"),
     isDev: () => ipcRenderer.invoke("devtools:isDev"),
+    getDatabaseStats: () => ipcRenderer.invoke("devtools:getDatabaseStats"),
+    seedDatabase: () => ipcRenderer.invoke("devtools:seedDatabase"),
+    exportDatabase: () => ipcRenderer.invoke("devtools:exportDatabase"),
+    executeQuery: (query: string) =>
+      ipcRenderer.invoke("devtools:executeQuery", query),
   },
 });
