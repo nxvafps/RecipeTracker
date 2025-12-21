@@ -243,6 +243,7 @@ export function getCurrentUser(): User | null {
 export function wipeDatabase(): { success: boolean; message: string } {
   try {
     // Drop all tables in reverse order of dependencies
+    db.exec("DROP TABLE IF EXISTS shopping_list_items");
     db.exec("DROP TABLE IF EXISTS recipe_instructions");
     db.exec("DROP TABLE IF EXISTS recipe_ingredients");
     db.exec("DROP TABLE IF EXISTS recipes");
