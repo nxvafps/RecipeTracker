@@ -1,22 +1,15 @@
 const theme = {
   colors: {
-    // dark pastel purple background
-    background: "#0f0b14",
-    // light pastel text for contrast on dark background
-    text: "#f4ecff",
-    // soft pastel lavender primary (links, accents)
-    primary: "#caa6ff",
-    // slightly deeper for hover states
-    primaryHover: "#b083ff",
-    // dark-but-warm button background
-    buttonBg: "#15101a",
-    // subtle hover background for links (light pastel glow)
-    linkHoverBg: "rgba(202,166,255,0.08)",
-    // soft gradient mixing pastel purple & pink for active states (subtle on dark)
+    background: "#120612",
+    text: "#fff6fb",
+    primary: "#ffb3d9",
+    primaryHover: "#ff85c2",
+    buttonBg: "#200814",
+    linkHoverBg: "rgba(255,179,217,0.08)",
     activeGradient:
-      "linear-gradient(90deg, rgba(202,166,255,0.12), rgba(255,182,215,0.04))",
-    divider: "rgba(255,255,255,0.08)",
-    dividerHighlight: "rgba(202,166,255,0.06)",
+      "linear-gradient(90deg, rgba(255,179,217,0.12), rgba(255,223,230,0.04))",
+    divider: "rgba(255,179,217,0.06)",
+    dividerHighlight: "rgba(255,182,215,0.08)",
   },
   spacing: {
     sidebarPadding: "1rem",
@@ -27,8 +20,7 @@ const theme = {
     default: "8px",
   },
   shadows: {
-    // slightly stronger, tinted shadow to read on dark backgrounds
-    active: "0 6px 18px rgba(88, 44, 150, 0.36)",
+    active: "0 6px 18px rgba(255,128,178,0.24)",
   },
 } as const;
 

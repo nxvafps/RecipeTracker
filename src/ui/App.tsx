@@ -1,9 +1,9 @@
-import { BrowserRouter, Routes, Route, NavLink } from "react-router-dom";
-import Recipes from "./Recipes.tsx";
-import ShoppingList from "./ShoppingList.tsx";
-import { GlobalStyle, AppRoot, Sidebar, MainContent } from "./styles.tsx";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import * as page from "./pages";
+import { GlobalStyle, AppRoot, MainContent } from "./styles";
 import { ThemeProvider } from "styled-components";
 import theme from "./theme";
+import * as components from "./components";
 
 function App() {
   return (
@@ -11,44 +11,13 @@ function App() {
       <ThemeProvider theme={theme}>
         <GlobalStyle theme={theme} />
         <AppRoot>
-          <Sidebar>
-            <h2>Recipe Planner</h2>
-            <nav>
-              <NavLink
-                to="/"
-                end
-                className={({ isActive }) => (isActive ? "active" : "")}
-              >
-                Home
-              </NavLink>
-              <NavLink
-                to="/recipes"
-                className={({ isActive }) => (isActive ? "active" : "")}
-              >
-                Recipes
-              </NavLink>
-              <NavLink
-                to="/shopping"
-                className={({ isActive }) => (isActive ? "active" : "")}
-              >
-                Shopping List
-              </NavLink>
-            </nav>
-          </Sidebar>
+          <components.layout.Sidebar />
 
           <MainContent>
             <Routes>
-              <Route
-                path="/"
-                element={
-                  <>
-                    <h1>Recipe Planner</h1>
-                    <p>Welcome — choose a page from the sidebar.</p>
-                  </>
-                }
-              />
-              <Route path="/recipes" element={<Recipes />} />
-              <Route path="/shopping" element={<ShoppingList />} />
+              <Route path="/" element={<page.Home />} />
+              <Route path="/recipes" element={<page.Recipes />} />
+              <Route path="/shopping" element={<page.ShoppingList />} />
             </Routes>
           </MainContent>
         </AppRoot>
