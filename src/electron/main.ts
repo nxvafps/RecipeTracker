@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { isDev } from "./util.js";
 import { initDatabase } from "./database.js";
 import { setupAuthHandlers } from "./auth-handlers.js";
+import { setupIngredientHandlers } from "./ingredient-handlers.js";
 
 // ES module equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -13,6 +14,7 @@ const __dirname = path.dirname(__filename);
 app.on("ready", () => {
   initDatabase();
   setupAuthHandlers();
+  setupIngredientHandlers();
 
   const minWidth = 800;
   const minHeight = 600;

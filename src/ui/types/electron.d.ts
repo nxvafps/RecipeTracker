@@ -27,6 +27,49 @@ declare global {
           created_at: string;
         } | null>;
       };
+      ingredients: {
+        add: (
+          name: string,
+          unit: string
+        ) => Promise<{
+          success: boolean;
+          message: string;
+          ingredient?: {
+            id: number;
+            name: string;
+            unit: string;
+            user_id: number;
+            created_at: string;
+          };
+        }>;
+        getAll: () => Promise<{
+          success: boolean;
+          ingredients?: Array<{
+            id: number;
+            name: string;
+            unit: string;
+            user_id: number;
+            created_at: string;
+          }>;
+          message?: string;
+        }>;
+        update: (
+          id: number,
+          name: string,
+          unit: string
+        ) => Promise<{
+          success: boolean;
+          message: string;
+          ingredient?: {
+            id: number;
+            name: string;
+            unit: string;
+            user_id: number;
+            created_at: string;
+          };
+        }>;
+        delete: (id: number) => Promise<{ success: boolean; message: string }>;
+      };
       devtools: {
         wipeDatabase: () => Promise<{ success: boolean; message: string }>;
         isDev: () => Promise<boolean>;

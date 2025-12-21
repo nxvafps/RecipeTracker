@@ -10,6 +10,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
     logout: () => ipcRenderer.invoke("auth:logout"),
     getCurrentUser: () => ipcRenderer.invoke("auth:getCurrentUser"),
   },
+  // Ingredients methods
+  ingredients: {
+    add: (name: string, unit: string) =>
+      ipcRenderer.invoke("ingredients:add", name, unit),
+    getAll: () => ipcRenderer.invoke("ingredients:getAll"),
+    update: (id: number, name: string, unit: string) =>
+      ipcRenderer.invoke("ingredients:update", id, name, unit),
+    delete: (id: number) => ipcRenderer.invoke("ingredients:delete", id),
+  },
   // DevTools methods (only work in development mode)
   devtools: {
     wipeDatabase: () => ipcRenderer.invoke("devtools:wipeDatabase"),

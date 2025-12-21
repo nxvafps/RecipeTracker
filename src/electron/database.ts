@@ -29,6 +29,18 @@ export function initDatabase() {
     )
   `);
 
+  // Create ingredients table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ingredients (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      unit TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
   console.log("Database initialized at:", dbPath);
 }
 
@@ -391,3 +403,160 @@ export function executeQuery(query: string): {
 }
 
 export { db };
+
+// Ingredient interfaces and functions
+export interface Ingredient {
+  id: number;
+  name: string;
+  unit: string;
+  user_id: number;
+  created_at: string;
+}
+
+// Add a new ingredient
+export function addIngredient(
+  name: string,
+  unit: string,
+  userId: number
+): { success: boolean; message: string; ingredient?: Ingredient } {
+  try {
+    if (!name || name.trim().length === 0) {
+      return {
+        success: false,
+        message: "Ingredient name is required",
+      };
+    }
+
+    if (!unit || unit.trim().length === 0) {
+      return {
+        success: false,
+        message: "Unit is required",
+      };
+    }
+
+    const stmt = db.prepare(
+      "INSERT INTO ingredients (name, unit, user_id) VALUES (?, ?, ?)"
+    );
+    const result = stmt.run(name.trim(), unit.trim(), userId);
+
+    const newIngredient = db
+      .prepare("SELECT * FROM ingredients WHERE id = ?")
+      .get(result.lastInsertRowid) as Ingredient;
+
+    return {
+      success: true,
+      message: "Ingredient added successfully",
+      ingredient: newIngredient,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to add ingredient: " + error.message,
+    };
+  }
+}
+
+// Get all ingredients for a user
+export function getIngredients(userId: number): {
+  success: boolean;
+  ingredients?: Ingredient[];
+  message?: string;
+} {
+  try {
+    const stmt = db.prepare(
+      "SELECT * FROM ingredients WHERE user_id = ? ORDER BY created_at DESC"
+    );
+    const ingredients = stmt.all(userId) as Ingredient[];
+
+    return {
+      success: true,
+      ingredients,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to get ingredients: " + error.message,
+    };
+  }
+}
+
+// Update an ingredient
+export function updateIngredient(
+  id: number,
+  name: string,
+  unit: string,
+  userId: number
+): { success: boolean; message: string; ingredient?: Ingredient } {
+  try {
+    if (!name || name.trim().length === 0) {
+      return {
+        success: false,
+        message: "Ingredient name is required",
+      };
+    }
+
+    if (!unit || unit.trim().length === 0) {
+      return {
+        success: false,
+        message: "Unit is required",
+      };
+    }
+
+    const stmt = db.prepare(
+      "UPDATE ingredients SET name = ?, unit = ? WHERE id = ? AND user_id = ?"
+    );
+    const result = stmt.run(name.trim(), unit.trim(), id, userId);
+
+    if (result.changes === 0) {
+      return {
+        success: false,
+        message: "Ingredient not found or not authorized",
+      };
+    }
+
+    const updatedIngredient = db
+      .prepare("SELECT * FROM ingredients WHERE id = ?")
+      .get(id) as Ingredient;
+
+    return {
+      success: true,
+      message: "Ingredient updated successfully",
+      ingredient: updatedIngredient,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to update ingredient: " + error.message,
+    };
+  }
+}
+
+// Delete an ingredient
+export function deleteIngredient(
+  id: number,
+  userId: number
+): { success: boolean; message: string } {
+  try {
+    const stmt = db.prepare(
+      "DELETE FROM ingredients WHERE id = ? AND user_id = ?"
+    );
+    const result = stmt.run(id, userId);
+
+    if (result.changes === 0) {
+      return {
+        success: false,
+        message: "Ingredient not found or not authorized",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Ingredient deleted successfully",
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to delete ingredient: " + error.message,
+    };
+  }
+}
