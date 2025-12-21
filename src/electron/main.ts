@@ -1,8 +1,19 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
+import { fileURLToPath } from "url";
 import { isDev } from "./util.js";
+import { initDatabase } from "./database.js";
+import { setupAuthHandlers } from "./auth-handlers.js";
 
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Initialize database and handlers
 app.on("ready", () => {
+  initDatabase();
+  setupAuthHandlers();
+
   const minWidth = 800;
   const minHeight = 600;
 
@@ -12,6 +23,11 @@ app.on("ready", () => {
     minWidth,
     minHeight,
     resizable: true,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
   });
 
   mainWindow.on("will-resize", (event, newBounds) => {

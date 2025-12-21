@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "ESNext",
-    "module": "nodenext",
+    "target": "ES2020",
+    "module": "commonjs",
     "outDir": "../../dist-electron",
     "skipLibCheck": true
   },
-  "include": ["**/*.ts"],
-  "exclude": ["preload.ts"]
+  "include": ["preload.ts"]
 }

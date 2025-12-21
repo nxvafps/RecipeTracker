@@ -43,6 +43,9 @@ export const SidebarContainer = styled.aside<{ theme: Theme }>`
   padding-bottom: ${({ theme }) => theme.spacing.sidebarPadding};
   box-sizing: border-box;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 
   &::after {
     ${dividerGlowStyles}
@@ -59,6 +62,7 @@ export const SidebarContainer = styled.aside<{ theme: Theme }>`
     align-items: center;
     gap: 1rem;
     padding: ${({ theme }) => theme.spacing.sidebarMobilePadding};
+    height: auto;
   }
 `;
 
@@ -119,5 +123,76 @@ export const SidebarNavLink = styled.a`
     &::before {
       display: none;
     }
+  }
+`;
+
+export const UserSection = styled.div`
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+
+  @media (max-width: 640px) {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+`;
+
+export const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: ${({ theme }) => theme.colors.surface};
+  border-radius: ${({ theme }) => theme.radii.default};
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 640px) {
+    padding: 0.5rem;
+  }
+`;
+
+export const UserAvatar = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.primary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+`;
+
+export const UserName = styled.div`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const LogoutButton = styled.button`
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  background: transparent;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radii.default};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 160ms ease;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.linkHoverBg};
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  @media (max-width: 640px) {
+    padding: 0.4rem 0.6rem;
   }
 `;
