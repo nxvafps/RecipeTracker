@@ -26,7 +26,7 @@ function App() {
         if (currentUser) {
           setUser(currentUser);
         }
-        
+
         // Check if running in dev mode
         const devMode = await window.electronAPI.devtools.isDev();
         setIsDev(devMode);
@@ -91,7 +91,7 @@ function App() {
             onSwitchToLogin={() => setAuthMode("login")}
           />
         )}
-        
+
         {/* DevTools panel - available on auth screens in dev mode */}
         {isDev && <devtools.DevTools />}
       </ThemeProvider>
@@ -113,7 +113,7 @@ function App() {
               <Route path="/shopping" element={<page.ShoppingList />} />
             </Routes>
           </MainContent>
-          
+
           {/* DevTools panel - only shown in development mode */}
           {isDev && <devtools.DevTools />}
         </AppRoot>

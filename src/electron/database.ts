@@ -181,10 +181,10 @@ export function wipeDatabase(): { success: boolean; message: string } {
     // Drop all tables
     db.exec("DROP TABLE IF EXISTS active_session");
     db.exec("DROP TABLE IF EXISTS users");
-    
+
     // Reinitialize the database
     initDatabase();
-    
+
     return {
       success: true,
       message: "Database wiped and reinitialized successfully",

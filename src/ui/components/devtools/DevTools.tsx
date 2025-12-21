@@ -6,7 +6,7 @@ import {
   DevToolsButton,
   DevToolsMessage,
   ToggleButton,
-} from "./styles";
+} from "./styles.tsx";
 
 export const DevTools = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,7 +65,13 @@ export const DevTools = () => {
         <DevToolsContent>
           <div style={{ marginBottom: "1rem" }}>
             <h4 style={{ margin: "0 0 0.5rem 0" }}>Database Management</h4>
-            <p style={{ fontSize: "0.85rem", opacity: 0.8, margin: "0 0 1rem 0" }}>
+            <p
+              style={{
+                fontSize: "0.85rem",
+                opacity: 0.8,
+                margin: "0 0 1rem 0",
+              }}
+            >
               Warning: These actions are destructive and cannot be undone.
             </p>
           </div>
@@ -84,7 +90,9 @@ export const DevTools = () => {
             {isLoading ? "Wiping Database..." : "🗑️ Wipe Database"}
           </DevToolsButton>
 
-          <div style={{ marginTop: "1.5rem", fontSize: "0.75rem", opacity: 0.6 }}>
+          <div
+            style={{ marginTop: "1.5rem", fontSize: "0.75rem", opacity: 0.6 }}
+          >
             <p style={{ margin: 0 }}>
               Wiping the database will delete all tables and recreate them,
               effectively resetting the app to its initial state.

@@ -66,7 +66,9 @@ export const DevToolsContent = styled.div`
   color: ${({ theme }) => theme.colors.text};
 `;
 
-export const DevToolsButton = styled.button<{ $variant?: "primary" | "danger" }>`
+export const DevToolsButton = styled.button<{
+  $variant?: "primary" | "danger";
+}>`
   width: 100%;
   padding: 12px 20px;
   border: none;
@@ -92,7 +94,7 @@ export const DevToolsButton = styled.button<{ $variant?: "primary" | "danger" }>
       color: white;
 
       &:hover:not(:disabled) {
-        background: ${theme.colors.primaryDark || theme.colors.primary};
+        background: ${theme.colors.primaryHover};
       }
     `;
   }}
