@@ -42,7 +42,9 @@ export const SidebarContainer = styled.aside<{ theme: Theme }>`
   padding-top: ${({ theme }) => theme.spacing.sidebarPadding};
   padding-bottom: ${({ theme }) => theme.spacing.sidebarPadding};
   box-sizing: border-box;
-  position: relative;
+  position: fixed;
+  left: 0;
+  top: 0;
   display: flex;
   flex-direction: column;
   height: 100vh;
