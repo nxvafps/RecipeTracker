@@ -505,7 +505,9 @@ export const Recipes = () => {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [selectedRecipes, setSelectedRecipes] = useState<Set<number>>(new Set());
+  const [selectedRecipes, setSelectedRecipes] = useState<Set<number>>(
+    new Set()
+  );
   const [isAddingToShoppingList, setIsAddingToShoppingList] = useState(false);
 
   // Ingredient modal state
@@ -646,7 +648,7 @@ export const Recipes = () => {
     try {
       // Fetch full recipe details for all selected recipes
       const selectedRecipeDetails = await Promise.all(
-        Array.from(selectedRecipes).map(id => 
+        Array.from(selectedRecipes).map((id) =>
           window.electronAPI.recipes.getById(id)
         )
       );
@@ -659,13 +661,13 @@ export const Recipes = () => {
         quantity: string;
       }> = [];
 
-      selectedRecipeDetails.forEach(result => {
+      selectedRecipeDetails.forEach((result) => {
         if (result.success && result.recipe) {
-          result.recipe.ingredients.forEach(ing => {
+          result.recipe.ingredients.forEach((ing) => {
             itemsToAdd.push({
               ingredientId: ing.ingredient_id,
-              ingredientName: ing.ingredient_name || '',
-              ingredientUnit: ing.ingredient_unit || '',
+              ingredientName: ing.ingredient_name || "",
+              ingredientUnit: ing.ingredient_unit || "",
               quantity: ing.quantity,
             });
           });
@@ -673,12 +675,16 @@ export const Recipes = () => {
       });
 
       // Add items to shopping list (backend will handle combining duplicates)
-      const addResult = await window.electronAPI.shoppingList.addItems(itemsToAdd);
-      
+      const addResult = await window.electronAPI.shoppingList.addItems(
+        itemsToAdd
+      );
+
       if (addResult.success) {
         // Clear selection after successful add
         setSelectedRecipes(new Set());
-        alert(`Successfully added ingredients from ${selectedRecipes.size} recipe(s) to shopping list!`);
+        alert(
+          `Successfully added ingredients from ${selectedRecipes.size} recipe(s) to shopping list!`
+        );
       } else {
         alert(addResult.message || "Failed to add items to shopping list");
       }
@@ -888,16 +894,17 @@ export const Recipes = () => {
     <Container>
       <Header>
         <Title>Recipes</Title>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
           {selectedRecipes.size > 0 && (
             <ShoppingListButton
               onClick={handleAddToShoppingList}
               disabled={isAddingToShoppingList}
             >
-              {isAddingToShoppingList 
-                ? 'Adding...' 
-                : `Add ${selectedRecipes.size} Recipe${selectedRecipes.size > 1 ? 's' : ''} to Shopping List`
-              }
+              {isAddingToShoppingList
+                ? "Adding..."
+                : `Add ${selectedRecipes.size} Recipe${
+                    selectedRecipes.size > 1 ? "s" : ""
+                  } to Shopping List`}
             </ShoppingListButton>
           )}
           <AddButton onClick={openModal}>Add Recipe</AddButton>

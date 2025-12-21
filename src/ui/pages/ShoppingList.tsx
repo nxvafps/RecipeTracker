@@ -184,7 +184,9 @@ interface ShoppingListItem {
 export const ShoppingList = () => {
   const [items, setItems] = useState<ShoppingListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [editingQuantities, setEditingQuantities] = useState<Record<number, string>>({});
+  const [editingQuantities, setEditingQuantities] = useState<
+    Record<number, string>
+  >({});
 
   useEffect(() => {
     loadShoppingList();
@@ -219,7 +221,10 @@ export const ShoppingList = () => {
     }
 
     try {
-      const result = await window.electronAPI.shoppingList.update(itemId, newQuantity);
+      const result = await window.electronAPI.shoppingList.update(
+        itemId,
+        newQuantity
+      );
       if (result.success) {
         await loadShoppingList();
         const { [itemId]: _, ...rest } = editingQuantities;
@@ -282,16 +287,14 @@ export const ShoppingList = () => {
       <Header>
         <Title>Shopping List</Title>
         {items.length > 0 && (
-          <ClearButton onClick={handleClearList}>
-            Clear All
-          </ClearButton>
+          <ClearButton onClick={handleClearList}>Clear All</ClearButton>
         )}
       </Header>
 
       {items.length === 0 ? (
         <EmptyState>
           <EmptyText>Your shopping list is empty</EmptyText>
-          <EmptyText style={{ fontSize: '1rem', marginTop: '0.5rem' }}>
+          <EmptyText style={{ fontSize: "1rem", marginTop: "0.5rem" }}>
             Select recipes and add their ingredients to get started!
           </EmptyText>
         </EmptyState>
@@ -304,7 +307,9 @@ export const ShoppingList = () => {
                 <QuantityInput
                   type="text"
                   value={editingQuantities[item.id] ?? item.quantity}
-                  onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                  onChange={(e) =>
+                    handleQuantityChange(item.id, e.target.value)
+                  }
                   placeholder="Quantity"
                 />
                 <Unit>{item.ingredient_unit}</Unit>

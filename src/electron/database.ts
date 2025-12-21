@@ -1127,7 +1127,7 @@ export function addToShoppingList(
 
     // Create a map to combine quantities
     const itemMap = new Map<string, ShoppingListItem>();
-    
+
     // Add existing items to map
     existingItems.forEach((item) => {
       const key = `${item.ingredient_name}|${item.ingredient_unit}`;
@@ -1191,11 +1191,11 @@ function combineQuantities(qty1: string, qty2: string): string {
   // Try to parse as numbers and add
   const num1 = parseFloat(qty1);
   const num2 = parseFloat(qty2);
-  
+
   if (!isNaN(num1) && !isNaN(num2)) {
     return (num1 + num2).toString();
   }
-  
+
   // If can't parse, concatenate with a separator
   return `${qty1} + ${qty2}`;
 }
@@ -1303,7 +1303,9 @@ export function clearShoppingList(userId: number): {
   message: string;
 } {
   try {
-    const stmt = db.prepare("DELETE FROM shopping_list_items WHERE user_id = ?");
+    const stmt = db.prepare(
+      "DELETE FROM shopping_list_items WHERE user_id = ?"
+    );
     const result = stmt.run(userId);
 
     return {
