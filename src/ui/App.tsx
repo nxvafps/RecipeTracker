@@ -109,6 +109,7 @@ function App() {
           <MainContent>
             <Routes>
               <Route path="/" element={<page.Home />} />
+              <Route path="/ingredients" element={<page.Ingredients />} />
               <Route path="/recipes" element={<page.Recipes />} />
               <Route path="/shopping" element={<page.ShoppingList />} />
             </Routes>

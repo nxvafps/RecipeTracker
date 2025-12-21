@@ -40,6 +40,13 @@ export const Sidebar = ({ user, onLogout }: SidebarProps) => {
         </SidebarNavLink>
         <SidebarNavLink
           as={NavLink}
+          to="/ingredients"
+          className={({ isActive }) => (isActive ? "active" : "")}
+        >
+          Ingredients
+        </SidebarNavLink>
+        <SidebarNavLink
+          as={NavLink}
           to="/recipes"
           className={({ isActive }) => (isActive ? "active" : "")}
         >
