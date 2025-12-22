@@ -13,7 +13,7 @@ const Title = styled.h1`
 const Section = styled.div`
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: ${({ theme }) => theme.colors.cardBackground};
+  background: ${({ theme }) => theme.colors.surface};
   border-radius: 8px;
   border: 1px solid ${({ theme }) => theme.colors.border};
 `;
@@ -27,7 +27,7 @@ const SectionTitle = styled.h2`
 const InfoRow = styled.div`
   display: flex;
   margin-bottom: 0.75rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -69,9 +69,10 @@ export const About = () => {
       <Section>
         <SectionTitle>About</SectionTitle>
         <Description>
-          Recipe Tracker is a comprehensive recipe management application that helps you
-          organize your recipes, track ingredients, and create shopping lists. Built with
-          modern technologies including Electron, React, and TypeScript.
+          Recipe Tracker is a comprehensive recipe management application that
+          helps you organize your recipes, track ingredients, and create
+          shopping lists. Built with modern technologies including Electron,
+          React, and TypeScript.
         </Description>
       </Section>
 
@@ -83,8 +84,7 @@ export const About = () => {
           • Track ingredients and quantities
           <br />
           • Generate shopping lists
-          <br />
-          • User authentication and data privacy
+          <br />• User authentication and data privacy
         </Description>
       </Section>
     </AboutContainer>
